@@ -1,0 +1,56 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpazo}
+
+
+\title{Notes for CS 162: Formal Languages \& Automata}
+\author{Cailyx Quan}
+\usepackage{xcolor}
+\usepackage{achemso}
+
+\begin{document}
+\maketitle
+here we mainly focus on decidable and undecidable problems
+\section{Regular languages and finite state automata}
+\section{Context-free languages and pushdown automata}
+
+\section{Turing machines and decidability}
+
+Recall a Turing machine (TM) is a more powerful kind of automaton than we’ve seen before; see other materials for a formalization. As normal, it’s going to specify, upon any input $w$, the sequence of configurations that w will take. Here a configuration is simply a specification of the state $M$ is in, the symbol in the current tape square, the symbol that is to be written in that tape square, and the next state, and we say some configuration $C_i$ \emph{yields} $C_{i+1}$ if they are elements of the transition function. This sequence of configurations is called the \emph{computation} on that input, and for TMs has 3 possible fates: terminate in an accept state, terminate in a reject state, or enter an infinite loop where the machine never reaches a final $C_m$. Exactly that set of strings which, upon being fed through our TM, are accepted, comprise the language of the TM. I.e. for every TM, $M$, we have a $L(M)$.  
+
+Suppose we have a string and we want to check if our $M$ will accept or reject it, so we try to follow $C_1$, $C_2$, \ldots and perhaps it’s been quite a while – we find ourselves asking, are we going to reach a state eventually, or will $M$ keep running forever? If, \emph{for all strings}, not just the ones of its language, our $M$ is able to reach an accept or a reject state and not produce an infinite loop, we call $M$ a \emph{decider}. Otherwise $M$ is simply a \emph{recognizer}, that is, it simply meets the less strict requirement of accepting those strings in its language, but we don’t necessarily know whether it will halt on every possible input string. If we want to know in advance whether following a given input will eventually reach an answer, or if we’re just following the machine down its infinite loop \ldots we’ll be interested to ask, how can we know whether the machine $M$ of some language $L$ is a decider? That is, how can we know if our machine is going to halt on every input or not? 
+
+The way we might treat this question is to first generalize to \emph{all} machines M1, M2, etc. that share some property P. We might want to collect these into a set, namely, the set of all machines with this property – more precisely, we might want to know whether a given M should belong or not. So we might ask, can we build \emph{another machine} that \emph{feeds as input} any such M, that \emph{itself} will accept or reject on evaluating every input? In other words, what we’re trying to do is build a \emph{decider} that can simply tell us, for any kind of input machine we might want to try, whether it really has that property (e.g., being a DFA that accepts a string w). For example, suppose we are tasked with testing a very long list of machines for their belonging to this set of things with property P. If we can build such a decider, what this means is we can feed each member of this collection into it and know whether we have our type of machine of interest – i.e., we can carve out our set of machines that have this property, adding those that do and discarding those that don’t. If we can build such a decider, we have found a way to \emph{solve the problem} of determining whether or not any machine has our property.
+
+To get started with building a decider, recall that formally, deciders (and machines in general) recognize \emph{languages}, sets of strings. So if we want to ask about a set of \emph{machines}, we need to package the specification for a machine into a string, call this representation $<M>$, and now we can collect many such strings (encoding our machines) into a language. Call this the language of the machine we’re hoping to build that not only says ‘yes – some <Mi> here has whatever property P!’ but also will tell us, in the case that we feed in some <M> that doesn’t have property P, will tell us ‘no – this one doesn’t have property P!’ and \emph{never just leaves us hanging in an infinite loop} – i.e., we’re not just hoping for any machine, we’re hoping to build a decider. If we’re successful, then this language – the set of strings that have the property – is decidable, because the machine for our language can not only accept the right strings but also decidedly reject those strings that don’t have the property. So we can ‘know’ which do and which don’t. This language is termed decidable and informally we sometimes denote this a ‘decidable problem.’ If we can’t, then we have an \emph{undecidable} language/problem.
+
+\section{Problems involving regular languages}
+\subsection{Acceptance problem}
+Suppose we’re interested in the property, \emph{is a DFA that accepts a string}. That is, we want to ask – for any given DFA and any given string, is the string accepted by the DFA? This is called the \textbf{acceptance problem}, the language consisting of DFAs and strings for which the answer is yes. Formally, of course, the language is not a mix of DFAs and strings but a \emph{set of strings encoding such DFA-string pairs} – we denote these of the form <M, w> where M is a DFA and w is a string in L(M) – where the string is accepted by the DFA in its pair. In other words, our property described more accurately is something like \emph{‘is a machine-string pair s.t. the machine’s a DFA and the string’s in the language of the DFA.’} Moreover we ask, can we get an answer for every such DFA-string pair? If the answer to this is \emph{yes}, then our language is decidable and we can provide a decider. If we can specify an algorithm for what some machine we build would do to determine \emph{yes} or \emph{no}, that is, terminate in a finite amount of time, we have successfully described a decider. Let’s imagine what this decider would do at a high level. Note that within the quotation marks, if we say ``we” we are referring to \emph{what the decider is doing}.
+
+``On input $<M, w>$ where $M$ is a DFA and w a string in $\Sigma*$: // at a lower level, this machine will have to check first that the TM is given as input $<M, w>$, $M$ is a DFA and w is a string, and our representation is valid.
+Run $M$ on input $w$, keeping track of the state $M$ enters at each transition.
+If $M$ reaches an accept state, we (the decider) accept.
+If $M$ reaches a reject state, we reject.”
+
+This is straightforward since we know that for every string, a DFA will either accept or reject it, so if our decider is seeing any DFA and any string, all it has to do is simulate the string’s computation through the DFA and see if it accepts or rejects, and give the answer straightforwardly – accept or reject. Therefore on every DFA-string pair, our machine here is a decider, so we’ve shown that, to the question of ‘can we decide whether any DFA-string pair has the property, is a machine-string pair s.t. the machine’s a DFA and it accepts the string?’, the answer is yes.
+
+Formally, we can say that this language, call it ADFA, where
+
+$A_{DFA} = \{\langle M, w\rangle $ s.t. $M$ is a DFA and $w \in L(M)\}$
+
+is decidable.
+
+\subsection{Emptiness problem}
+The emptiness problem is 
+$E_{DFA} = \{\langle M \rangle $ s.t. $M$ is a DFA and $L(M) = \emptyset\}$.
+
+We want to know whether it’s decidable. I.e., we’re trying to ask, ‘can we decide whether any given DFA recognizes the empty language’? This means we want to collect precisely those machines that do not recognize any strings, and we want to be able to have an algorithm that says yes, some DFA under consideration recognizes the empty language, or no, it doesn’t. Here’s what our decider could do:
+
+“On input $\langle M \rangle$, 
+
+\section{Problems involving context-free languages}
+
+\section{Problems involving Turing-recognizable languages}
+
+\end{document}

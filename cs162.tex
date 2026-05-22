@@ -97,14 +97,18 @@ Suppose we have a DFA $D$ with a language $L(D)$. We'd like to know whether ther
 \newpage
 \section{Problems involving context-free languages}
 \subsection{Acceptance problem $A_{CFG}$}
-Given a CFG $G$, can we determine whether it generates a string containing an input $w$ as a substring? 
 
 \subsection{Acceptance problem $A_{PDA}$}
 Since PDAs can be converted into CFGs, our decider here can simply perform this conversion and then decide it with our decider for $A_{CFG}$.
+
 \subsection{Emptiness problem $E_{CFG}$}
 Suppose we have a grammar. We say variables are \emph{productive} if they can eventually generate only terminals, and \emph{unproductive} otherwise. We can procedurally determine which is which by the following: mark all terminals with an $x$. Then mark all variables $A$ of the form $A \to x^+$ (consisting of only and at least one of $x$) with an $x$. Continue this process until no more rules can be marked. Check if the starting symbol $S$ is marked with an $x$. If it is, there's a way to eventually generate a string, so the language of the grammar is non-empty, otherwise it's empty -- this is what a decider for $E_{CFG}$ could tell us.
+
 \subsection{Equivalence problem $EQ_{CFG}$}
 undecidable!!
+
+\subsection{CFGs that generate an input string as substring}
+Given a CFG $G$, can we determine whether it generates a string containing an input $w$ as a substring? What our decider can do is, on input $\langle G, w \rangle$, construct a $G'$ that generates $L(G) \cap \Sigma^* w \Sigma^*$. We can then use our emptiness decider to tell us whether $L(G')$ is empty, in which case we reject, otherwise we reject.
 
 \newpage
 \section{Problems involving Turing-recognizable languages}
@@ -235,8 +239,19 @@ Build some LBA $B_{M, w}$ which only accepts its input $x$ if it is an accepting
 Run our decider $D$ for $E_{LBA}$ on $\langle B_{M, w} \rangle$. If $D$ accepts, $L(B_{M, w})$ is empty, which occurred because $M$ didn't accept $w$, otherwise our LBA would have accepted the string encoding its computation history, so we reject. If $D$ rejects, our pair of $M$ and $w$ has an accepting computation history that matched exactly with the string that $B_{M, w}$ accepts, making its language non-empty. So we accept."
 \end{quote}
 \end{quote}
+
+\subsection{A TM that eventually writes a blank on an input}
+We're asking, can we know whether a TM $M$, on reading a string $w$, will eventually write a blank or not? We reduce the \emph{halting} problem to this one. The strategy here is to get a setup where if we know the TM writes a blank or not, we immediately know whether the TM halts or not. We might imagine hijacking $M$ so that when it's supposed to halt, it actually writes a blank; then our decider can tell us `$M$ wrote a blank!' and then we can decide `$M$ halted!'. But instead of hijacking $M$ itself, on input $M$ and $w$, we construct another $M'$ that behaves just like $M$ except it halts in exactly the cases where $M$ writes a blank. 
+
+The way we can make $M'$ do this is the following. We first need to make sure that any blank-writing steps in $M$'s computation of $w$, $M'$ doesn't write, otherwise with our plan, we'd end up deciding $M$ halts when all it did was write a blank. So replace all the blanks in $M$'s transition function with another symbol $x$. Then replace all transitions with \emph{halt} states in $M$ with blank-writing transitions. Then run the decider to check whether $M$ on $w$ wrote a blank, and if it accepts, we accept -- i.e., we determine $M$ has halted.
+
+\subsection{Acceptance of the reverse of an accepted string}
+Our language is the set of $\langle M \rangle$ where $M$ is a TM that accepts $w^R$ whenever it accepts $w$. Our goal is going to be to try to solve the acceptance problem -- to know whether $M$ accepts some $w$. What we want is a machine $P$ that accepts some $x$, then is fed into our decider to tell us whether $P$ accepts $x^R$; in exactly the cases it does we accept a $\langle M, w \rangle$, else we reject. 
+
+The way we might make $P$'s acceptance of $x^R$ depend on $M$ accepting $w$ is as follows. Here's what $P$ does: on reading $x$, if it is not 10 or 01, reject. If $x$ is 10, accept. If $x$ is 01, feed it through $M$ and accept if $M$ does, else reject. Then run a decider for our original problem on $P$. If it accepts, this means in every case where $P$ accepts an input, it accepts its reverse. It could also mean
+
 \newpage
-\section{Other problems and helpful things}
+\section{Helpful things}
 \subsection{Number of rule applications to make a string}
 If $G$ is a CFG in Chomsky normal form, any $w \in L(G)$ takes $2 \cdot \mid w \mid - 1$ rule applications for all $w \neq \epsilon$ (in which case it takes 1).
 

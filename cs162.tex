@@ -87,12 +87,22 @@ Construct another DFA, call it $B$, that recognizes the language \[(L(M_1) \cap 
 Run $E_{DFA}$ on input $\langle B \rangle$. If it accepts, we accept. If not, we reject."
 \end{quote}
 
+\subsection{DFAs that accept a palindrome}
+Our language describes those DFAs which accept a palindrome, and we'd like to know if we can decide it. For every string encoding DFA $D$, we can construct a grammar $G$ that will generate the language $L(D) \cap \{w \mid w = w^R\}$ then use our emptiness decider for $E_{CFG}$ to tell us whether $L(G)$ is empty, in which case we reject, otherwise accept.
+
+\subsection{DFAs whose language is not recognized by a smaller DFA}
+Suppose we have a DFA $D$ with a language $L(D)$. We'd like to know whether there exists a smaller DFA $D'$ that can also recognize $L(D)$. There are a finite number of DFAs smaller than $D$ -- if our alphabet has $\mid \Sigma \mid$ characters and $q$ states, we have a maximum of $q^{(q \cdot \mid \Sigma \mid)}$ possible distinct transitions. So for each such $D'_i$ just use our decider for $EQ_{DFA}$ to determine whether $L(D) = L(D')$ and accept iff once it's checked all, the decider has not produced a single yes. 
+
+
 \newpage
 \section{Problems involving context-free languages}
 \subsection{Acceptance problem $A_{CFG}$}
+Given a CFG $G$, can we determine whether it generates a string containing an input $w$ as a substring? 
+
 \subsection{Acceptance problem $A_{PDA}$}
 Since PDAs can be converted into CFGs, our decider here can simply perform this conversion and then decide it with our decider for $A_{CFG}$.
 \subsection{Emptiness problem $E_{CFG}$}
+Suppose we have a grammar. We say variables are \emph{productive} if they can eventually generate only terminals, and \emph{unproductive} otherwise. We can procedurally determine which is which by the following: mark all terminals with an $x$. Then mark all variables $A$ of the form $A \to x^+$ (consisting of only and at least one of $x$) with an $x$. Continue this process until no more rules can be marked. Check if the starting symbol $S$ is marked with an $x$. If it is, there's a way to eventually generate a string, so the language of the grammar is non-empty, otherwise it's empty -- this is what a decider for $E_{CFG}$ could tell us.
 \subsection{Equivalence problem $EQ_{CFG}$}
 undecidable!!
 

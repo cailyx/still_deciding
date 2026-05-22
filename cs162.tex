@@ -1,0 +1,250 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{mathpazo}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\title{Notes on Formal Languages \& Automata}
+\author{Cailyx Quan}
+\usepackage{xcolor}
+\usepackage{achemso}
+
+\begin{document}
+\maketitle
+
+Here for core topics introduced in Prof. M. Shindler's CS 162 at UCI, I give somewhat casual and expressly long-form explanations, so long-form the interpreting machine might start to wonder whether or not they will eventually terminate. These are trying to act as something of verbal `tidbits' to help color in an intuitive understanding of things.
+
+\section{Relation between languages and automata}
+\subsection{Chomsky hierarchy}
+
+\section{Regular languages and finite state automata}
+\section{Context-free languages and pushdown automata}
+PUSHPOPPUSHPOPPUSHPOP
+
+\section{Turing machines and decidability}
+
+Recall a Turing machine (TM) is a more powerful kind of automaton than we’ve seen before; see other materials for a formalization. As normal, it’s going to specify, upon any input $w$, a particular sequence of configurations. Here a configuration is simply a specification of the state $M$ is in, the symbol in the current tape square, the symbol that is to be written in that tape square, and the next state, and we say some configuration $C_i$ \emph{yields} $C_{i+1}$. This sequence of configurations is called $M$'s \emph{computation} on that input, and for TMs has 3 possible fates: halt in an accept state, halt in a reject state, or enter an infinite loop where the machine never halts. Exactly that set of strings which, upon being fed through our TM, are accepted, comprise the language of the TM. I.e. for every TM, $M$, we have a $L(M)$.  
+
+Suppose we have a string and we want to check if our $M$ will accept or reject it, so we try to follow $C_1$, $C_2$, \ldots and perhaps it’s been quite a while – we find ourselves asking, are we going to reach a state eventually, or will $M$ keep running forever? If, \emph{for all strings}, not just the ones of its language, our $M$ is able to reach an accept or a reject state and not produce an infinite loop, we call $M$ a \emph{decider}. Otherwise $M$ is simply a \emph{recognizer}, that is, it simply meets the less strict requirement of accepting those strings in its language, but we don’t necessarily know whether it will halt on every possible input string. If we want to know in advance whether following a given input will eventually reach an answer, or if we’re just following the machine down its infinite loop \ldots we’ll be interested to ask, how can we know whether the machine $M$ of some language $L$ is a decider? That is, how can we know if our machine is going to halt on every input or not? 
+
+The way we might treat this question is to first generalize to \emph{all} machines $M_1, M_2$, etc. that share some property $P$. We might want to collect these into a set, namely, the set of all machines with this property – more precisely, we might want to know whether a given $M$ should belong or not. So we might ask, can we build \emph{another machine} that \emph{feeds as input} any such $M$, that \emph{itself} will accept or reject on evaluating every input? In other words, what we’re trying to do is build a \emph{decider} that can simply tell us, for any kind of input machine we might want to try, whether it really has that property (e.g., being a DFA that accepts a string w). For example, suppose we are tasked with testing a very long list of machines for their belonging to this set of things with property $P$. If we can build such a decider, what this means is we can feed each member of this collection into it and know whether we have our type of machine of interest – i.e., we can carve out our set of machines that have this property, adding those that do and discarding those that don’t. If we can build such a decider, we have found a way to \emph{solve the problem} of determining whether or not any machine has our property.
+
+To get started with building a decider, recall that formally, deciders (and machines in general) recognize \emph{languages}, sets of strings. So if we want to ask about a set of \emph{machines}, we need to package the specification for a machine into a string, call this representation $\langle M \rangle$, and now we can collect many such strings (encoding our machines) into a language. Call this the language of the machine we’re hoping to build that not only says ‘yes – some $\langle M_i \rangle$ here has whatever property $P$!’ but also will tell us, in the case that we feed in some $\langle M \rangle$ that doesn’t have property $P$, will tell us ‘no – this one doesn’t have property $P$!’ and \emph{never just leaves us hanging in an infinite loop} – i.e., we’re not just hoping for any machine, we’re hoping to build a \emph{decider}. If we’re successful, then this language – the set of strings that have the property – is decidable, because the machine for our language can not only accept the right strings but also decidedly reject those strings that don’t have the property. So we can ‘know’ which do and which don’t. This language is termed decidable and informally we sometimes denote this a ‘decidable problem.’ If we can’t, then we have an \emph{undecidable} language/problem.
+
+\newpage
+Here are a bunch of problems we show to be decidable or not. In \textcolor{red}{red} are key ones from lecture.
+\section{Problems involving regular languages}
+\subsection{\textcolor{red}{Acceptance problem $A_{DFA}$}}
+Suppose we’re interested in the property, \emph{is a DFA that accepts a string}. That is, we want to ask – for any given DFA and any given string, is the string accepted by the DFA? This is called the \textbf{acceptance problem}, the language consisting of DFAs and strings for which the answer is yes. Formally, of course, the language is not a mix of DFAs and strings but a \emph{set of strings encoding such DFA-string pairs} – we denote these of the form $\langle M, w \rangle$ where M is a DFA and $w$ is a string in $L(M)$ – where the string is accepted by the DFA in its pair. In other words, our property described more accurately is something like \emph{‘is a machine-string pair s.t. the machine’s a DFA and the string’s in the language of the DFA.’} Moreover we ask, can we get an answer for every such DFA-string pair? If the answer to this is \emph{yes}, then our language is decidable and we can provide a decider. If we can specify an algorithm for what some machine we build would do to determine \emph{yes} or \emph{no}, that is, terminate in a finite amount of time, we have successfully described a decider. Let’s imagine what this decider, call it $D$, would do at a high level. Note that within the quotation marks, if we say ``we” we are referring to \emph{what the decider is doing}.
+\begin{quote}
+``On input $\langle M, w \rangle$ where $M$ is a DFA and $w$ a string in $\Sigma^*$: \textcolor{gray}{// at a lower level, this machine will have to check first that the TM is given as input $\langle M, w \rangle$, $M$ is a DFA and w is a string, and our representation is valid.}
+\begin{quote}Run $M$ on input $w$, keeping track of the state $M$ enters at each transition.
+
+If $M$ reaches an accept state, we (the decider) accept.
+
+If $M$ reaches a reject state, we reject.”
+\end{quote}
+\end{quote}
+This is straightforward since we know that for every string, a DFA will either accept or reject it, so if our decider is seeing any DFA and any string, all it has to do is simulate the string’s computation through the DFA and see if it accepts or rejects, and give the answer straightforwardly – accept or reject. Therefore on every DFA-string pair, our machine here is a decider, so we’ve shown that, to the question of ‘can we decide whether any DFA-string pair has the property, is a machine-string pair s.t. the machine’s a DFA and it accepts the string?’, the answer is yes.
+
+Formally, we can say that this language, call it $A_{DFA}$, where
+\[ A_{DFA} = \{\langle M, w\rangle \mid M \text{ is a DFA and } w \in L(M)\} \]
+is decidable, as we've provided a decider $D$ for it.
+
+\subsection{\textcolor{red}{Acceptance problem $A_{NFA}$}}
+Same thing as above except our decider can first convert our NFA to a DFA, then for every NFA-string pair, run it through the $D$ we built that decides $A_{DFA}$.
+
+\subsection{\textcolor{red}{Acceptance problem $A_{REX}$}}
+We simply build an NFA for our regular expression in question and then use $A_{NFA}$ to determine whether our input string is a member of the NFA's language.
+
+\subsection{\textcolor{red}{Emptiness problem $E_{DFA}$}}
+The emptiness problem is 
+\[E_{DFA} = \{\langle M \rangle \mid M \text{ is a DFA and } L(M) = \emptyset\}\]
+
+We want to know whether it’s decidable. I.e., we’re trying to ask, ‘can we decide whether any given DFA recognizes the empty language’? This means we want to collect precisely those machines that do not recognize any strings, and we want to be able to have an algorithm that says yes, some DFA under consideration recognizes the empty language, or no, it doesn’t. Here’s what our decider could do:
+\begin{quote}
+“On input $\langle M \rangle$, where $M$ is a DFA:
+\begin{quote}
+Perform a breadth-first search (BFS) \textcolor{gray}{//this }, removing all `unreachable' states.
+
+If there are any $f \in F$ (any final states in the set of all the machine's final states) remaining, we reject, because this means $M$ accepts some string, so $L(M)$ is not empty. Otherwise, accept."
+\end{quote}
+\end{quote}
+
+\subsection{\textcolor{red}{Equivalence problem $EQ_{DFA}$}}
+The equivalence problem asks whether two machines have the same language:
+\[EQ_{DFA} = \{\langle M_1, M_2 \rangle \mid L(M_1) = L(M_2)\}\]
+Is there a way for us to evaluate \emph{any two DFAs} and know whether they have the same language or not? Well, another way to say the languages are equivalent is if the set of strings in $M_1$ and not $M_2$ is empty, and the set of strings in $M_2$ and not $M_1$ is empty. So we just need to describe the union of these sets as one set (one language) and use our emptiness decider to tell us whether that language is empty, in which case we accept. This works because recall we'll be able to build a DFA for each of the languages (by definition), and since these regular languages are closed under intersection, complement, and union, we'll be able to build a DFA for the language we've built using those operations. Let's build a decider:
+\begin{quote}
+``On input $\langle M_1, M_2 \rangle$, where $M_1, M_2$ are DFAs:
+
+\begin{quote}
+Construct a DFA that recognizes $L(M_1)$ and one that recognizes $L(M_2)$.
+
+Construct another DFA, call it $B$, that recognizes the language \[(L(M_1) \cap \overline{L(M_2)}) \cup (L(M_2) \cap \overline{L(M_1)})\]
+
+\end{quote}
+Run $E_{DFA}$ on input $\langle B \rangle$. If it accepts, we accept. If not, we reject."
+\end{quote}
+
+\newpage
+\section{Problems involving context-free languages}
+\subsection{Acceptance problem $A_{CFG}$}
+\subsection{Acceptance problem $A_{PDA}$}
+Since PDAs can be converted into CFGs, our decider here can simply perform this conversion and then decide it with our decider for $A_{CFG}$.
+\subsection{Emptiness problem $E_{CFG}$}
+\subsection{Equivalence problem $EQ_{CFG}$}
+undecidable!!
+
+\newpage
+\section{Problems involving Turing-recognizable languages}
+\subsection{\textcolor{red}{Acceptance problem $A_{TM}$}}
+The acceptance problem asks whether for every TM and a given input string, we'll know whether the string's accepted by the TM or not:
+\[A_{TM} = \{\langle M, w \rangle \mid M \text{ is a TM and } w \in L(M)\}\]
+
+Suppose that $A_{TM}$ were decidable and there exists the following $D$ decides it:
+\begin{quote}
+``On input $\langle M, w \rangle$, where $M$ is a TM and $w$ is a string:
+\begin{quote}
+Accept if $M$ accepts $w$, otherwise reject."
+\end{quote}
+\end{quote}
+
+If we have in our hands a $D$ decides $A_{TM}$, we could conceive the following decider $E$:
+\begin{quote}
+``On input $\langle M \rangle$, where $M$ is a TM:
+\begin{quote}
+Run $D$ on $\langle M, \langle M \rangle \rangle$, where $\langle M \rangle$ is the input string that $D$ will simulate feeding into $M$.
+
+Output the opposite of what $D$ would have decided.
+
+That is, $D$ is going to simulate $M$ on $\langle M \rangle$. If $M$ accepts $\langle M \rangle$, $D$ accepts, so we reject. If $M$ rejects $\langle M \rangle$, $D$ rejects, so we accept."
+\end{quote}
+\end{quote}
+
+Surely this has to work for all possible $\langle M \rangle$, so let's try inputting $E$ itself and try to see how $D$ will handle the input $\langle E, \langle E \rangle \rangle$:
+\begin{quote}
+``We see the input $\langle E \rangle$:
+\begin{quote}
+Now we run $D$ on the input $\langle E, \langle E \rangle \rangle$, which is going to simulate $E$ on the input string $\langle E \rangle$. 
+
+If $E$ accepts $\langle E \rangle$, then we reject $\langle E \rangle$. If $E$ rejects $\langle E \rangle$, then we accept $\langle E \rangle$. $\bot$"
+\end{quote}
+\end{quote}
+
+We have a contradiction! We've just tried to tell ourselves that $E$ is going to accept just in case it rejects, and that it rejects just in case it accepts. Therefore, the decider $D$ we have attempted to produce can not exist, and so $A_{TM}$ is undecidable. That said, note that $D$ \emph{will} properly recognize all the strings $w \in L(M)$ -- for $D$ simulates $M$ on input string $w$ and accepts in case $D$ halts on an accept (and rejects in case $D$ halts on a reject). Now, if our $M$ in question loops infinitely on our string $w$, well, all our $D$ can do is infinitely loop too -- so, indeed, it's not a decider, but a recognizer just fine.
+
+It might seem we were toast from the moment we supposed that there existed a decider for telling whether or not a TM accepts a string, because this is implicitly asking the decider to tell us the answer to \emph{what the TM does when it halts}. I.e., because we've tried to say \emph{yes} or \emph{no} to the accept question, we've presupposed that the TM halts at all (to tell us whether it accepts or rejects), but what if our TM happens to infinitely loop on our string? Our poor decider could not know. This idea will be captured by the halting problem.
+
+\subsection{\textcolor{red}{Halting problem $HALT_{TM}$}}
+The halting problem asks whether a given TM will halt or not on a given input string:
+\[HALT_{TM} = \{\langle M, w \rangle \mid M \text{ is a TM and } M \text{ halts on input } w\}\]
+Idea: suppose we did have some decider $D$ for this language. Then for any TM-string pair, we can determine whether it will halt or not. Therefore, if we can check that it halts, then we can simulate $M$ in a finite amount of time. If we can do so, then at the end of the finite number of steps that $M$ has taken on an input string, we can accept if $M$ accepts it and reject if $M$ rejects it. Then there exists some decider for $A_{TM}$, but we've already seen $A_{TM}$ is undecidable. This is a contradiction and so $HALT_{TM}$ is undecidable. Let's write out pseudocode for the decider $D'$ $A_{TM}$ that we would've been able to derive if a decider for $HALT_{TM}$ existed:
+\begin{quote}
+``On input $\langle M, w \rangle$:
+\begin{quote}
+Run $D$ on $\langle M, w \rangle$, which gives an answer to whether it halts or not.
+
+If $D$ rejects (i.e., says that $M$ does not halt), we reject.
+
+If $D$ accepts (i.e., says that $M$ does halt):
+\begin{quote}
+Simply simulate $M$ on input $w$. If $M$ accepts $w$, we accept.
+If $M$ accepts $w$, we reject."
+\end{quote}
+\end{quote}
+\end{quote}
+
+What we've done is built up a way to decide $A_{TM}$ taking advantage of the supposed ability to decide $HALT_{TM}$, realized this can't be the case because $A_{TM}$ is not in fact decidable, and therefore concluded there's no such decider for the halting problem. The structure of our argument is this:
+\begin{quote}
+(1) Assume $\exists D$ for $HALT_{TM}$ 
+\begin{quote}
+(2) $\exists D$ for $HALT_{TM} \implies \exists D'$ for $A_{TM}$ (by (1)) \textcolor{gray}{// all we had to do is provide a construction for such $A_{TM}$ decider! From the existence of a decider for $HALT_{TM}$, follows the possible existence of one for $A_{TM}$.}
+\end{quote}
+(3) $\neg \exists D'$ for $A_{TM}$ (by the proof that $A_{TM}$ is undecidable)
+
+$\therefore \neg \exists D$ for $HALT_{TM}$ (by (1) and (3))
+\end{quote}
+\subsection{\textcolor{red}{Emptiness problem $E_{TM}$}}
+We'd like to know whether this is decidable:
+\[E_{TM} = \{\langle M \rangle \mid M \text{ is a TM and } L(M) = \emptyset\}\]
+Similar to the last problem, we're going to suppose that we can indeed make a decider $D$ that decides whether any $L(M)$ is empty, and  as a result derive a successful $A_{TM}$ decider, realize we can't have such an $A_{TM}$ decider, and so conclude that our decider can't exist. What this will look like is to build an $A_{TM}$ decider using the assumption that we have a decider $E$ for $E_{TM}$. 
+
+Another way to think about this kind of proof structure is with the idea of \textbf{reducing problems}. Any problem, if reducable to an easy, solvable problem, is too rendered easy and solvable. So if we know that a problem is unsolvable, we know any problem we might try to reduce it to must also be unsolvable, for if it were solvable, then our original problem would also be solvable.
+
+We exploit the fact that if we've reduced a `hard' problem to an easy one, we've demonstrated that the hard problem is actually easy too. We pretend to reduce the hard problem $A_{TM}$ down to an easy one by deriving that $A_{TM}$ is solvable if we've solved some other `easy' problem, and are forced then to accept that our `hard' problem $A_{TM}$ is actually solvable. The only way to get back to claiming that $A_{TM}$ is in fact unsolvable, is to do away with assuming our `easy' problem was easy -- i.e., we must accept our `easy' problem is actually undecidable. 
+
+Let's build our `fake' way to decide $A_{TM}$ on the assumption that we have a decider for $E_{TM}$. We've got some TM-string pair, and we want to know whether the string is accepted by the TM. We're going to first build another TM $M'$ that reads an input $x$, rejects if it's not our $w$ under consideration, simulates $M$ on input $x$ if it's equal to $w$ and accepts if $M$ accepts $w$. Now we have a language $L(M')$ that's either empty or contains exactly $w$. We just need to let our emptiness decider read $M'$ and reject if it says yes, `$L(M')$ is empty,' because this indicates $w$ wasn't accepted by $M$ and so was excluded from $L(M')$. Then if our emptiness decider says no, we know $L(M')$ contains exactly $w$, which came from $M$ having accepted $w$.
+\begin{quote}
+``On input $\langle M, w \rangle$, 
+\begin{quote} 
+Make a TM, $M'$ that behaves like this:
+\begin{quote}
+``On input $x$, if $x \neq w$, reject. If $x = w$, run $M$ on $w$, and accept if $M$ does."
+\end{quote}
+Run $E$ that decides $E_{TM}$ on $\langle M' \rangle$.
+
+If $E$ accepts, our $L(M')$ is empty which means $M$ didn't accept our $w$, so we reject. If $E$ rejects, $L(M')$ contains $w$ from having simulated $M$ and matched its acceptance of $w$, so we accept."
+\end{quote}
+\end{quote}
+Well, looks like we've wound up with a way to decide $A_{TM}$, which is too good to be true, so the emptiness problem for TMs is undecidable.
+
+\subsection{\textcolor{red}{Equivalence problem $EQ_{TM}$}}
+We ask about whether we can know two TMs have the same language:
+\[EQ_{TM} = \{\langle M_1, M_2 \rangle \mid L(M_1) = L(M_2)\}\]
+Let's suppose we've got such a decider, $D$ that decides $EQ_{TM}$. What monstrosity might we build with it?
+
+\begin{quote}
+``On input $\langle M \rangle$:
+\begin{quote}
+Construct an $\langle M' \rangle$ that recognizes the empty language.
+
+Run $D$ that decides $EQ_{TM}$ on the input $\langle M, M' \rangle$.
+
+If $D$ accepts, we accept. If $D$ rejects, we reject."
+\end{quote}
+\end{quote}
+
+We've just built a decider that tells us whether $M$ is empty or not! But we know $E_{TM}$ is undecidable. So $EQ_{TM}$ must be undecidable.
+
+\subsection{\textcolor{red}{Acceptance problem $A_{LBA}$}}
+A linear bounded automaton (LBA) is a special, restricted type of TM that never moves its head past the input tape. 
+\[A_{LBA} = \{\langle M, w \rangle \mid M \text{ is an LBA and } w \in L(M)\}\]
+
+Is this decidable? Well, not being able to move outside of the input tape constricts the range of possible configurations. In particular, an LBA with $q$ states, $g$ symbols in the tape alphabet, and a tape length of $n$ has $qng^n$ possible distinct configurations. Therefore if we try to simulate an LBA and start to perform greater than $qng^n$ configurations, we know we've entered an infinite loop and can reject. So this is decidable.
+
+\subsection{\textcolor{red}{Emptiness problem $E_{LBA}$}}
+We'd like to know if the language of any such LBA recognizes is empty or not:
+\[E_{LBA} = \{\langle M \rangle \mid L(M) = \emptyset\}\]
+Assume a decider $D$ decides $E_{LBA}$ and let's try to solve $A_{TM}$:
+\begin{quote}
+``On input $\langle M, w \rangle$ where $M$ is a TM and $w$ is some string in $\Sigma^*$: 
+\begin{quote}
+Build some LBA $B_{M, w}$ which only accepts its input $x$ if it is an accepting computation history for $M$ on $w$. \textcolor{gray}{// this works since for every TM $M$ and string $w$, there is exactly one accepting computation history, so all we need to do is build an LBA that has exactly this in its language.}
+
+Run our decider $D$ for $E_{LBA}$ on $\langle B_{M, w} \rangle$. If $D$ accepts, $L(B_{M, w})$ is empty, which occurred because $M$ didn't accept $w$, otherwise our LBA would have accepted the string encoding its computation history, so we reject. If $D$ rejects, our pair of $M$ and $w$ has an accepting computation history that matched exactly with the string that $B_{M, w}$ accepts, making its language non-empty. So we accept."
+\end{quote}
+\end{quote}
+\newpage
+\section{Other problems and helpful things}
+\subsection{Number of rule applications to make a string}
+If $G$ is a CFG in Chomsky normal form, any $w \in L(G)$ takes $2 \cdot \mid w \mid - 1$ rule applications for all $w \neq \epsilon$ (in which case it takes 1).
+
+Chomsky normal form (every grammar can be expressed in this form):
+\begin{enumerate}
+	\item $S \to \epsilon$
+	\item $A \to a$
+	\item $A \to BC$
+\end{enumerate}
+where $B, C \neq S$.
+
+The only way we could generate the $\epsilon$ is by one rule application.
+
+Consider a non-empty $w$. If $\mid w \mid = 1$, we can only apply rule 2. If $\mid w \mid \geq 2$, we have to apply rule 3 first. Note at the beginning, we have exactly one variable $S$, and at each rule application (before converting to terminals) we get an additional variable. It will take $n - 1$ rules to get to the end; it takes $n$ rules to then replace the variables with terminals. Summing these we get $2n - 1$ rules. This generalizes to all strings $w$ (except $\epsilon$) because regardless of the order in which we apply our rules, each non-terminal has to turn into a terminal at some point.
+
+This is helpful for building deciders for problems involving CFLs.
+
+\subsection{Reduction of languages}
+Language $A$ reduces to language $B$, that is $A \leq_m B$ iff there exists a computable function $f \colon \Sigma^* \to \Sigma^* $ such that for every $x$, $x \in A \iff f(x) \in B$. If we're thinking about problems, each element $x \in A$ is an instance of some problem -- e.g., it might be some machine-string pair where the machine accepts the string -- that, if we have a reduction, maps onto an instance of a problem in $B$. 
+
+\end{document}
